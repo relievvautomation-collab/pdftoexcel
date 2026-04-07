@@ -1,0 +1,1 @@
+"""PDF → Excel conversion package."""

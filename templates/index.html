@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF to Excel Converter — Relievv</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon/favicon-96x96.png') }}" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon/favicon.svg') }}" />
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" />
+      <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}" />
+      <link rel="manifest" href="{{ url_for('static', filename='favicon/site.webmanifest') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .container{max-width: 1500px;}
+        .nav-link{font-weight: 500;}
+         
+       </style>
+</head>
+<body>
+    <div class="app-container">
+      <div class="container">
+
+        <header class="position-sticky top-0 bg-white" style="z-index: 999; border-bottom: 1px solid #d6d6d6;">
+          <nav class="navbar navbar-expand-lg navbar-light bg-white">
+            <div class="container">
+                <a class="navbar-brand" href="https://www.relievv.in/"> 
+                      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="logo" style="width: 120px;">   
+                 </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item"><a class="nav-link" href="https://www.relievv.in/">Home</a></li>
+                        <li class="nav-item"><a class="nav-link" href="https://relievv.in/#tools">All Tools</a></li>
+                        <li class="nav-item"><a class="nav-link" href="https://relievv.in/#categories">Categories</a></li>
+                        <li class="nav-item"><a class="nav-link" href="https://relievv.in/#about">About</a></li>
+                        <li class="nav-item"><a class="nav-link" href="https://relievv.in/blog">Blog</a></li>
+                        <li class="nav-item"><a class="nav-link" href="https://relievv.in/contact">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+          </nav>
+        </header>
+
+        <div class="main-header bacckground-back-vl position-static top-0">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo-icon">
+                        <i class="fas fa-file-excel"></i>
+                    </div>
+                    <div class="logo-text">
+                        <h1>PDF to Excel Converter</h1>
+                        <p class="mb-0">Layout-aware conversion — text, fonts, colors, images, tables &amp; borders</p>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1.5rem;">
+                    <div class="header-badge">
+                        <i class="fas fa-shield-alt"></i> Secure Processing
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <main class="main-content p-0">
+            <section class="upload-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-cloud-upload-alt"></i> Upload PDF</h2>
+                    <div class="file-counter">
+                        <span id="fileCount">0</span> file selected
+                    </div>
+                </div>
+                <div class="upload-container">
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
+                        <h3 class="upload-text">Drag &amp; Drop Your PDF Here</h3>
+                        <p class="upload-subtext">
+                            Multi-page PDFs supported. Processing runs on the server; download a styled .xlsx when ready.
+                        </p>
+                        <button type="button" class="upload-button" id="browseButton">
+                            <i class="fas fa-folder-open"></i> Browse PDF File
+                        </button>
+                        <input type="file" id="fileInput" accept=".pdf">
+                    </div>
+                </div>
+            </section>
+
+            <div class="summary-section">
+                <div class="summary-card">
+                    <div class="card-icon"><i class="fas fa-file-pdf"></i></div>
+                    <div class="card-content">
+                        <div class="card-value" id="summaryFileCount">0</div>
+                        <div class="card-label">PDF File</div>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-icon"><i class="fas fa-file-alt"></i></div>
+                    <div class="card-content">
+                        <div class="card-value" id="summaryPageCount">0</div>
+                        <div class="card-label">Pages</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls-section">
+                <div class="mb-0" id="engineRow">
+                    <label for="engineSelect" class="form-label small text-muted mb-1">Conversion engine</label>
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <select id="engineSelect" class="form-select form-select-sm" style="max-width: 480px;">
+                            <option value="local">Local — layout-aware Excel (best match for TRACES / styled PDFs)</option>
+                            <option value="convertapi" id="optConvertapi" disabled title="Set CONVERTAPI_SECRET on the server">
+                                ConvertAPI — cloud table extraction (data only, not a visual copy of the PDF)
+                            </option>
+                        </select>
+                        <a href="https://www.convertapi.com/pdf-to-xlsx" target="_blank" rel="noopener noreferrer" class="small d-none text-nowrap">
+                            <i class="fas fa-external-link-alt"></i> ConvertAPI
+                        </a>
+                    </div>
+                    <!-- <p class="small text-muted mb-0 mt-1" id="engineHint">
+                        Local conversion runs on this server. ConvertAPI uses tokens from <code>.env</code> or the environment:
+                        <code>CONVERTAPI_SECRET</code> (production) or <code>CONVERTAPI_SECRET_SANDBOX</code> with <code>CONVERTAPI_ENV=sandbox</code>.
+                        See <code>env.example</code>.
+                    </p> -->
+                    <!-- <div id="engineFidelityWarn" class="alert alert-warning small py-2 px-3 mt-2 mb-0 d-none" role="status">
+                        <strong>ConvertAPI</strong> returns <em>extracted tables</em> in cells — not a pixel-perfect copy of the PDF (no logos, no guaranteed fonts/colors/page layout).
+                        For output that follows your PDF’s structure and styling more closely, use <strong>Local</strong>.
+                    </div> -->
+                </div>
+                <div id="convertapiOptionsRow" class="mb-0 border rounded p-3 bg-light d-none">
+                    <div class="small fw-semibold mb-2"> Layout</div>
+                    <div class="d-flex flex-wrap align-items-center gap-3 mb-2">
+                        <span class="small text-muted">Sheets:</span>
+                        <div class="btn-group btn-group-sm" role="group" aria-label="Sheet layout">
+                            <input type="radio" class="btn-check" name="sheetLayout" id="sheetMultiple" value="0" checked autocomplete="off">
+                            <label class="btn btn-outline-primary" for="sheetMultiple">Multiple sheets</label>
+                            <input type="radio" class="btn-check" name="sheetLayout" id="sheetOne" value="1" autocomplete="off">
+                            <label class="btn btn-outline-primary" for="sheetOne">One sheet</label>
+                        </div>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="includeFormatting">
+                        <label class="form-check-label small" for="includeFormatting">Include formatting (images and non-table text when supported by ConvertAPI)</label>
+                    </div>
+                </div>
+                <div class="d-flex flex-wrap align-items-center gap-2 w-100">
+                <button type="button" class="btn btn-primary" id="convertBtn">
+                    <i class="fas fa-file-export"></i> Convert to Excel
+                </button>
+                <button type="button" class="btn btn-secondary" id="resetBtn">
+                    <i class="fas fa-redo"></i> Reset Tool
+                </button>
+                <button type="button" class="btn btn-success" id="downloadBtn" disabled>
+                    <i class="fas fa-download"></i> Download Excel File
+                </button>
+                <div class="progress-bar" id="progressBar" style="display: none;">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                </div>
+            </div>
+
+            <section class="preview-section">
+                <div class="preview-header">
+                    <h3><i class="fas fa-columns"></i> Preview</h3>
+                    <span class="text-muted small">PDF (left) · Excel preview (right)</span>
+                </div>
+                <div class="preview-split-row row g-0">
+                    <div class="col-lg-6 border-end preview-col">
+                        <div class="preview-info-bar">
+                            <span id="pdfInfo">No PDF loaded.</span>
+                            <div class="pdf-controls" id="pdfControls" style="display: none;">
+                                <button type="button" id="prevPage"><i class="fas fa-chevron-left"></i> Previous</button>
+                                <span id="pageInfo">Page 1 of 1</span>
+                                <button type="button" id="nextPage">Next <i class="fas fa-chevron-right"></i></button>
+                            </div>
+                        </div>
+                        <div class="pdf-preview-container" id="pdfViewer">
+                            <div class="pdf-placeholder-inner text-center p-5 text-muted">
+                                <i class="fas fa-file-pdf fa-4x mb-3 d-block"></i>
+                                <h3>No PDF to Display</h3>
+                                <p>Upload a PDF to preview it here</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 preview-col">
+                        <!-- <div id="excelFidelityBanner" class="small text-dark bg-warning bg-opacity-25 border border-warning rounded px-2 py-2 mb-2 d-none">
+                        </div> -->
+                        <div class="preview-info-bar">
+                            <span id="excelInfo">Run conversion to load Excel preview.</span>
+                            <span id="excelRowInfo">Showing 0 rows</span>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="preview-table" id="excelTable">
+                                <thead id="excelHeader"></thead>
+                                <tbody id="excelBody">
+                                    <tr>
+                                        <td colspan="12" class="text-center p-5 text-muted">
+                                            <i class="fas fa-file-excel fa-3x mb-3 d-block"></i>
+                                            <h3>No Data to Display</h3>
+                                            <p>Convert a PDF to see extracted layout here</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="info-panel">
+                <div class="info-tabs">
+                    <button type="button" class="info-tab active" data-tab="features">Key Features</button>
+                    <button type="button" class="info-tab" data-tab="safety">Data Safety</button>
+                    <button type="button" class="info-tab" data-tab="notes">Important Notes</button>
+                </div>
+                <div class="tab-content-info">
+                    <div class="tab-pane-info active" id="features-tab">
+                        <ul class="info-list ps-0">
+                            <li>PyMuPDF extraction for text positions, fonts, colors, and embedded images</li>
+                            <li>Camelot / lattice-stream table detection when vector lines are present</li>
+                            <li>OpenPyXL output with fills, fonts, borders, merges, and column sizing</li>
+                            <li>Optional OCR (pytesseract) for scanned pages when no text is found</li>
+                            <li>Optional <strong>ConvertAPI</strong> (cloud) for raw table extraction — not a visual clone of the PDF; use <strong>Local</strong> for TRACES-style layout and colors</li>
+                            <li>Multi-page PDFs with per-page sections in the workbook</li>
+                        </ul>
+                    </div>
+                    <div class="tab-pane-info" id="safety-tab">
+                        <ul class="info-list ps-0">
+                            <li>Processing on your Python backend — files stored under uploads/ and outputs/</li>
+                            <li>Review outputs before sharing; verify financial or legal documents manually</li>
+                            <li>Local engine: no external API. <strong>ConvertAPI</strong> engine uploads the PDF to ConvertAPI and returns their XLSX — use only if you accept their terms and pricing.</li>
+                        </ul>
+                        <div class="disclaimer-box">
+                            <h4><i class="fas fa-shield-alt"></i> Disclaimer</h4>
+                            <p class="mb-0">Pixel-perfect PDF fidelity in Excel is not always possible; results depend on the PDF. Always verify the spreadsheet against the source PDF.</p>
+                        </div>
+                    </div>
+                    <div class="tab-pane-info" id="notes-tab">
+                        <ul class="info-list ps-0">
+                            <li><strong>ConvertAPI</strong> turns PDF tables into spreadsheet cells; it does <strong>not</strong> reproduce the PDF’s full look (logos, fonts, colors, exact layout). For outputs styled closer to the source (e.g. TRACES 26AS), use the <strong>Local</strong> engine.</li>
+                            <li><strong>ConvertAPI layout options:</strong> <em>Multiple sheets</em> vs <em>One sheet</em> and optional <em>Include formatting</em> map to ConvertAPI’s parameters. They adjust worksheets and extra content, not full PDF-style appearance.</li>
+                            <li>Vector/text PDFs give the best layout match; heavy scans rely on OCR quality</li>
+                            <li>Camelot may require Ghostscript for some files — see camelot docs</li>
+                            <li>Very large PDFs may take longer; progress is shown during conversion</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="supported-banks">
+                <div class="section-header">
+                    <h2><i class="fas fa-layer-group"></i> Typical Use Cases</h2>
+                </div>
+                <div class="banks-container">
+                    <div class="bank-card">
+                        <i class="fas fa-table fa-3x text-primary mb-2"></i>
+                        <span class="bank-name">Reports &amp; tables</span>
+                    </div>
+                    <div class="bank-card">
+                        <i class="fas fa-image fa-3x text-primary mb-2"></i>
+                        <span class="bank-name">Mixed text &amp; images</span>
+                    </div>
+                    <div class="bank-card">
+                        <i class="fas fa-file-invoice fa-3x text-primary mb-2"></i>
+                        <span class="bank-name">Invoices &amp; forms</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="info-panel">
+                <div class="section-header">
+                    <h2><i class="fas fa-question-circle"></i> Frequently Asked Questions</h2>
+                </div>
+                <div class="faq-container">
+                    <div class="faq-item">
+                        <h3>Will the Excel file look exactly like the PDF?</h3>
+                        <p>We map coordinates, styles, images, and detected tables as closely as Excel allows. Complex PDF graphics may require manual touch-up.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h3>Do you support scanned PDFs?</h3>
+                        <p>If no text is detected, the backend attempts OCR when <code>pytesseract</code> and Tesseract are installed on the server.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h3>What do I download?</h3>
+                        <p>A single <strong>.xlsx</strong> file built with OpenPyXL from the extracted structure.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="main-footer bacckground-back-vl">
+            <div class="footer-content">
+                <div class="copyright">
+                    © <script>document.write(new Date().getFullYear());</script>
+                    Relievv Automation • PDF to Excel Converter
+                </div>
+                <div class="footer-links">
+                    <a href="https://relievv.in/contact" target="_blank"><i class="fas fa-question-circle"></i> Help</a>
+                    <a href="https://relievv.in/contact" target="_blank"><i class="fas fa-envelope"></i> Contact</a>
+                    <a href="https://relievv.in/privacy-policy" target="_blank"><i class="fas fa-shield-alt"></i> Privacy</a>
+                </div>
+            </div>
+        </footer>
+
+        <div class="stats-container" id="statsContainer">
+            <div class="stats-header">
+                <i class="fas fa-chart-line"></i>
+                <span>Statistics</span>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="totalFilesCounter">0</div>
+                <div class="stat-label">Total Conversions</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="todayFilesCounter">0</div>
+                <div class="stat-label">Today</div>
+                <div class="stat-date" id="currentDate"></div>
+            </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlays" id="reportModal">
+        <div class="modals">
+            <div class="modal-headers">
+                <h2><i class="fas fa-file-download"></i> Download Excel File</h2>
+                <button type="button" class="close-modal" id="closeModal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-bodys p-4">
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <div class="summary-label">PDF Pages</div>
+                        <div class="summary-value" id="modalPageCount">0</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Cells (approx.)</div>
+                        <div class="summary-value" id="modalCellCount">0</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Processing Time</div>
+                        <div class="summary-value" id="modalTime">0s</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">File Size</div>
+                        <div class="summary-value" id="modalFileSize">0 KB</div>
+                    </div>
+                </div>
+                <div class="disclaimer-box">
+                    <h4><i class="fas fa-shield-alt"></i> Data Safety</h4>
+                    <p class="mb-0">Please verify the spreadsheet against your original PDF before relying on it for critical decisions.</p>
+                </div>
+                <div class="mt-4 d-flex gap-3 justify-content-center flex-wrap">
+                    <button type="button" class="btn btn-success" id="confirmDownload">
+                        <i class="fas fa-download"></i> Download Excel File
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="closeModalBtn">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 11000; top: 90px;">
+        <div
+            id="appToast"
+            class="toast shadow-lg border-0"
+            role="alert"
+            aria-live="polite"
+            aria-atomic="true"
+            style="min-width: 340px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);"
+        >
+            <div class="toast-header" id="appToastHeader">
+                <i class="fas fa-bell me-2" id="appToastIcon" aria-hidden="true"></i>
+                <strong class="me-auto" id="appToastTitle">Notice</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body text-dark" id="appToastBody"></div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+
+</body>
+</html>
