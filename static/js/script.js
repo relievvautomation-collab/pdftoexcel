@@ -255,7 +255,10 @@ function bumpStats() {
 function loadPreviewMeta() {
   if (!currentFileId) return;
   fetch(`/preview/${currentFileId}`)
-    .then((r) => r.json())
+    .then((r) => {
+      if (r.status === 404) return Promise.reject(new Error("preview_404"));
+      return r.json();
+    })
     .then((data) => {
       pageCount = data.page_count || 0;
       previewPageUrls = (data.pdf_pages || []).map((p) => p.url);
@@ -314,8 +317,23 @@ function pollConvert() {
   if (!currentFileId) return;
   const q = buildConvertQueryParams();
   fetch(`/convert/${currentFileId}?${q}`)
-    .then((r) => r.json())
+    .then((r) => {
+      if (r.status === 404) {
+        if (pollTimer) {
+          clearInterval(pollTimer);
+          pollTimer = null;
+        }
+        convertBtn.disabled = false;
+        showNotification(
+          "Session not found — re-upload the PDF. If this persists, the server must run Gunicorn with a single worker (see README).",
+          "error"
+        );
+        return Promise.reject(new Error("convert_404"));
+      }
+      return r.json();
+    })
     .then((data) => {
+      if (!data) return;
       const p = data.progress ?? 0;
       setProgress(p);
       if (data.status === "done") {
