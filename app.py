@@ -40,6 +40,7 @@ app = Flask(
 )
 app.config["MAX_CONTENT_LENGTH"] = 80 * 1024 * 1024  # 80 MB
 
+# In-memory only: use Gunicorn --workers 1 (see Procfile). Multiple workers → 404 on /convert poll.
 _jobs: Dict[str, Dict[str, Any]] = {}
 _jobs_lock = threading.Lock()
 # Same PDF bytes → same job (avoids double upload when UI fires twice)
