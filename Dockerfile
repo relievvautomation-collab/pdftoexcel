@@ -26,4 +26,5 @@ RUN mkdir -p uploads outputs previews
 
 EXPOSE 5001
 
-CMD gunicorn app:app --bind 0.0.0.0:${PORT} --workers 2 --threads 4 --timeout 300 --access-logfile - --error-logfile -
+# workers=1: shared in-memory job map; gthread handles concurrent requests in one process
+CMD gunicorn app:app --bind 0.0.0.0:${PORT} --workers 1 --worker-class gthread --threads 8 --timeout 300 --access-logfile - --error-logfile -
