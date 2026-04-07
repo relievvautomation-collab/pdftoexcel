@@ -14,7 +14,7 @@ python3 -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
- 
+
 Copy [`env.example`](env.example) to `.env` and fill secrets (never commit `.env`).
 
 ```bash
@@ -26,8 +26,10 @@ Open `http://localhost:5001`.
 
 ### Production-style run (local)
 
+Use **one Gunicorn worker** so in-memory upload jobs (`/upload` → `/convert` polling) stay on the same process. Concurrency comes from **`gthread`** threads:
+
 ```bash
-gunicorn app:app --bind 0.0.0.0:5001 --workers 2 --threads 4 --timeout 300
+gunicorn app:app --bind 0.0.0.0:5001 --workers 1 --worker-class gthread --threads 8 --timeout 300
 ```
 
 ## Environment variables
@@ -46,8 +48,9 @@ See [`env.example`](env.example).
 1. Push this repo to GitHub (no `.env`, no `uploads/` / `outputs/` / `previews/` — see [`.gitignore`](.gitignore)).
 2. New **Web Service** → connect repo.
 3. **Build command:** `pip install -r requirements.txt`
-4. **Start command:** `gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 300`  
-   (or rely on [`Procfile`](Procfile) if Render detects it.)
+4. **Start command:** use [`Procfile`](Procfile) (recommended) or  
+   `gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --worker-class gthread --threads 8 --timeout 300`  
+   Do **not** raise worker count above 1 unless you add shared storage (Redis/DB) for job state — otherwise `/convert` returns **404** while polling.
 5. **Environment:** add the same variables as in `env.example` in the Render dashboard.
 6. Optional: [`runtime.txt`](runtime.txt) pins Python for Render.
 
