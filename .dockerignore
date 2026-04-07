@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.git/
+.gitignore
+uploads/
+outputs/
+previews/
+.env
+.DS_Store
+*.md
+!README.md
+.cursor/
