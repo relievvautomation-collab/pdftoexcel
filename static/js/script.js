@@ -8,6 +8,10 @@ const resetBtn = document.getElementById("resetBtn");
 const downloadBtn = document.getElementById("downloadBtn");
 const progressBar = document.getElementById("progressBar");
 const progressFill = document.getElementById("progressFill");
+const progressLabel = document.getElementById("progressLabel");
+const globalLoader = document.getElementById("globalLoader");
+const globalLoaderMsg = document.getElementById("globalLoaderMsg");
+const globalLoaderHint = document.getElementById("globalLoaderHint");
 const fileCountEl = document.getElementById("fileCount");
 const summaryFileCount = document.getElementById("summaryFileCount");
 const summaryPageCount = document.getElementById("summaryPageCount");
@@ -50,9 +54,31 @@ let lastOcrNoticeFileId = null;
 let lastFileSelectKey = "";
 let lastFileSelectAt = 0;
 
-function setProgress(pct) {
+function setProgress(pct, labelText) {
   progressBar.style.display = "block";
   progressFill.style.width = `${Math.min(100, Math.max(0, pct))}%`;
+  if (progressLabel) {
+    if (labelText !== undefined && labelText !== null && labelText !== "") {
+      progressLabel.style.display = "block";
+      progressLabel.textContent = labelText;
+    }
+  }
+}
+
+/** Full-screen overlay for upload and slow /preview requests */
+function setGlobalLoader(show, message, hint) {
+  if (!globalLoader) return;
+  if (globalLoaderMsg && message) globalLoaderMsg.textContent = message;
+  if (globalLoaderHint) {
+    if (hint === false || hint === "") {
+      globalLoaderHint.style.display = "none";
+    } else {
+      globalLoaderHint.style.display = "block";
+      globalLoaderHint.textContent = hint || "Large PDFs can take a while.";
+    }
+  }
+  globalLoader.classList.toggle("d-none", !show);
+  globalLoader.setAttribute("aria-busy", show ? "true" : "false");
 }
 
 function resetUi() {
@@ -75,6 +101,12 @@ function resetUi() {
   downloadBtn.disabled = true;
   progressBar.style.display = "none";
   progressFill.style.width = "0%";
+  if (progressLabel) {
+    progressLabel.style.display = "none";
+    progressLabel.textContent = "";
+  }
+  setGlobalLoader(false);
+  if (uploadArea) uploadArea.classList.remove("is-busy");
   pdfControls.style.display = "none";
   pdfViewer.innerHTML =
     '<div class="pdf-placeholder-inner text-center p-5 text-muted"><i class="fas fa-file-pdf fa-4x mb-3 d-block"></i><h3>No PDF to Display</h3><p>Upload a PDF to preview it here.</p></div>';
@@ -253,8 +285,8 @@ function bumpStats() {
 }
 
 function loadPreviewMeta() {
-  if (!currentFileId) return;
-  fetch(`/preview/${currentFileId}`)
+  if (!currentFileId) return Promise.resolve();
+  return fetch(`/preview/${currentFileId}`)
     .then((r) => {
       if (r.status === 404) return Promise.reject(new Error("preview_404"));
       return r.json();
@@ -284,8 +316,7 @@ function loadPreviewMeta() {
         excelRowInfo.textContent = `Showing ${rows.length} preview rows`;
         excelInfo.textContent = "Excel layout preview (subset of cells)";
       }
-    })
-    .catch(() => {});
+    });
 }
 
 async function uploadFile(file) {
@@ -335,13 +366,15 @@ function pollConvert() {
     .then((data) => {
       if (!data) return;
       const p = data.progress ?? 0;
-      setProgress(p);
+      const stepLabel =
+        data.message || `Working… ${Math.round(p)}%`;
+      setProgress(p, stepLabel);
       if (data.status === "done") {
         clearInterval(pollTimer);
         pollTimer = null;
         convertBtn.disabled = false;
         downloadBtn.disabled = false;
-        setProgress(100);
+        setProgress(100, "Complete");
         bumpStats();
         const meta = data.excel_meta || {};
         const rows = meta.preview_rows || [];
@@ -351,12 +384,6 @@ function pollConvert() {
             ? "ConvertAPI: table data in Excel (not a visual copy of the PDF). Preview below."
             : "Conversion complete. Preview updates below.";
         setExcelFidelityBanner(meta);
-        loadPreviewMeta();
-        showNotification("Conversion complete. Excel ready.", "success");
-        if (meta.used_ocr && lastOcrNoticeFileId !== currentFileId) {
-          lastOcrNoticeFileId = currentFileId;
-          showNotification("OCR used (scanned/empty-text pages detected).", "success");
-        }
         const elapsed = ((Date.now() - convertStartTime) / 1000).toFixed(1);
         modalPageCount.textContent = String(meta.page_count || pageCount || 0);
         const cells = (meta.rows_written || 0) * (meta.cols_written || 0);
@@ -365,6 +392,21 @@ function pollConvert() {
         modalFileSize.textContent = currentPdfFile
           ? formatBytes(currentPdfFile.size)
           : "—";
+        setGlobalLoader(
+          true,
+          "Loading preview panels…",
+          "Updating PDF thumbnails and Excel grid from the server."
+        );
+        loadPreviewMeta()
+          .then(() => {
+            showNotification("Conversion complete. Excel ready.", "success");
+            if (meta.used_ocr && lastOcrNoticeFileId !== currentFileId) {
+              lastOcrNoticeFileId = currentFileId;
+              showNotification("OCR used (scanned/empty-text pages detected).", "success");
+            }
+          })
+          .catch(() => {})
+          .finally(() => setGlobalLoader(false));
       } else if (data.status === "error") {
         clearInterval(pollTimer);
         pollTimer = null;
@@ -430,16 +472,26 @@ async function handleFileSelect(file) {
   fileCountEl.textContent = "1";
   summaryFileCount.textContent = "1";
   pdfInfo.textContent = `Selected: ${file.name}`;
+  if (uploadArea) uploadArea.classList.add("is-busy");
+  setGlobalLoader(true, "Uploading PDF…", "Sending your file to the server.");
   try {
     const data = await uploadFile(file);
     currentFileId = data.file_id;
     pageCount = data.page_count || 0;
     summaryPageCount.textContent = String(pageCount);
-    loadPreviewMeta();
+    setGlobalLoader(
+      true,
+      "Loading preview from server…",
+      "Building PDF thumbnails and metadata. This can take 10–30 seconds for large files."
+    );
+    await loadPreviewMeta();
     syncEngineFidelityUI();
   } catch (e) {
     showNotification(e.message || String(e), "error");
     resetUi();
+  } finally {
+    if (uploadArea) uploadArea.classList.remove("is-busy");
+    setGlobalLoader(false);
   }
 }
 
@@ -450,7 +502,7 @@ convertBtn.addEventListener("click", () => {
   }
   convertBtn.disabled = true;
   convertStartTime = Date.now();
-  setProgress(5);
+  setProgress(5, "Starting conversion…");
   if (pollTimer) clearInterval(pollTimer);
   pollTimer = setInterval(pollConvert, 700);
   pollConvert();
