@@ -82,6 +82,39 @@ def _render_pdf_previews(pdf_path: Path, fid: str) -> int:
     return n
 
 
+def _get_pdf_page_count(pdf_path: Path) -> int:
+    """Fast page count without rendering previews."""
+    doc = fitz.open(str(pdf_path))
+    try:
+        return len(doc)
+    finally:
+        doc.close()
+
+
+def _render_pdf_previews_limited(pdf_path: Path, fid: str, max_pages: int) -> None:
+    """
+    Render a limited number of preview PNGs in background.
+    This keeps /upload fast on Render, Coolify, or any production host.
+    """
+    if max_pages <= 0:
+        return
+    out_sub = PREVIEW_DIR / fid
+    out_sub.mkdir(parents=True, exist_ok=True)
+    doc = fitz.open(str(pdf_path))
+    try:
+        n = min(len(doc), max_pages)
+        zoom = 1.6
+        mat = fitz.Matrix(zoom, zoom)
+        for i in range(n):
+            page = doc[i]
+            pix = page.get_pixmap(matrix=mat, alpha=False)
+            png_path = out_sub / f"page_{i + 1}.png"
+            pix.save(str(png_path))
+            _job_set(fid, preview_rendered=i + 1)
+    finally:
+        doc.close()
+
+
 def _run_conversion(fid: str) -> None:
     with _jobs_lock:
         job = _jobs.get(fid)
@@ -239,11 +272,25 @@ def upload():
     out_name = f"{fid}.xlsx"
     out_path = OUTPUT_DIR / out_name
 
-    preview_count = 0
+    # IMPORTANT: keep /upload fast everywhere (Render, Coolify, Docker, etc.).
+    # Preview PNGs render in a background thread and are capped by MAX_PREVIEW_PAGES.
     try:
-        preview_count = _render_pdf_previews(pdf_path, fid)
+        page_count = _get_pdf_page_count(pdf_path)
     except Exception:
-        preview_count = 0
+        page_count = 0
+
+    try:
+        max_preview = int(os.environ.get("MAX_PREVIEW_PAGES", "4"))
+    except Exception:
+        max_preview = 4
+    if max_preview < 0:
+        max_preview = 0
+
+    threading.Thread(
+        target=_render_pdf_previews_limited,
+        args=(pdf_path, fid, max_preview),
+        daemon=True,
+    ).start()
 
     with _jobs_lock:
         _hash_to_file_id[digest] = fid
@@ -254,7 +301,8 @@ def upload():
             "status": "uploaded",
             "progress": 0,
             "message": "Uploaded",
-            "preview_pages": preview_count,
+            "preview_pages": page_count,
+            "preview_rendered": 0,
             "error": None,
             "excel_meta": None,
             "sha256": digest,
@@ -263,7 +311,7 @@ def upload():
     return jsonify(
         {
             "file_id": fid,
-            "page_count": preview_count,
+            "page_count": page_count,
             "original_name": f.filename,
             "deduplicated": False,
         }
