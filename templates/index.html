@@ -157,8 +157,11 @@
                 <button type="button" class="btn btn-success" id="downloadBtn" disabled>
                     <i class="fas fa-download"></i> Download Excel File
                 </button>
-                <div class="progress-bar" id="progressBar" style="display: none;">
-                    <div class="progress-fill" id="progressFill"></div>
+                <div class="convert-progress-wrap flex-grow-1" style="min-width: 200px; max-width: 100%;">
+                    <div class="progress-bar" id="progressBar" style="display: none;">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div id="progressLabel" class="small text-muted mt-1" style="display: none;" aria-live="polite"></div>
                 </div>
                 </div>
             </div>
@@ -362,6 +365,14 @@
                     </button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div id="globalLoader" class="global-loader d-none" role="alert" aria-live="assertive" aria-busy="true">
+        <div class="global-loader-card shadow-lg border-0">
+            <div class="spinner-border text-primary mb-3" role="status" aria-hidden="true"></div>
+            <p class="global-loader-msg mb-1 text-center fw-semibold text-dark" id="globalLoaderMsg">Loading…</p>
+            <p class="small text-muted mb-0 text-center" id="globalLoaderHint">Large PDFs can take a while.</p>
         </div>
     </div>
 
