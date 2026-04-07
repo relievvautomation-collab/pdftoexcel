@@ -617,3 +617,34 @@ select.form-select:focus{
     .logo-text h1 { font-size: 1.5rem; }
     .upload-area { padding: 3rem 1rem; }
 }
+
+/* Full-screen loader: upload + slow /preview fetch */
+.global-loader {
+    position: fixed;
+    inset: 0;
+    z-index: 10050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* background: rgba(248, 250, 252, 0.92); */
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.global-loader.d-none {
+    display: none !important;
+}
+
+.global-loader-card {
+    background: transparent;
+    border-radius: 0;
+    padding: 2rem 2.5rem;
+    max-width: 22rem;
+    text-align: center;
+    border: 1px solid var(--border-blue);
+}
+
+.upload-area.is-busy {
+    pointer-events: none;
+    opacity: 0.65;
+}
