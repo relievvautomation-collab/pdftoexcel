@@ -109,14 +109,16 @@
 
             <div class="controls-section">
                 <div class="mb-0" id="engineRow">
-                    <label for="engineSelect" class="form-label small text-muted mb-1">Conversion engine</label>
+                    <label for="engineSelect" class="form-label small text-muted mb-1 d-none">Conversion</label>
                     <div class="d-flex flex-wrap align-items-center gap-2">
-                        <select id="engineSelect" class="form-select form-select-sm" style="max-width: 480px;">
-                            <option value="local">Local — layout-aware Excel (best match for TRACES / styled PDFs)</option>
-                            <option value="convertapi" id="optConvertapi" disabled title="Set CONVERTAPI_SECRET on the server">
-                                ConvertAPI — cloud table extraction (data only, not a visual copy of the PDF)
-                            </option>
+                        <!-- ConvertAPI-only UI: keep a hidden select for JS compatibility -->
+                        <select id="engineSelect" class="d-none" aria-hidden="true" tabindex="-1">
+                            <option value="convertapi" selected>ConvertAPI</option>
                         </select>
+                        <div class="small text-muted d-none">
+                            <span class="badge text-bg-primary">ConvertAPI</span>
+                            <span class="ms-2">Cloud conversion (requires `CONVERTAPI_SECRET`)</span>
+                        </div>
                         <a href="https://www.convertapi.com/pdf-to-xlsx" target="_blank" rel="noopener noreferrer" class="small d-none text-nowrap">
                             <i class="fas fa-external-link-alt"></i> ConvertAPI
                         </a>
