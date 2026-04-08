@@ -1,8 +1,11 @@
 .venv/
 __pycache__/
 *.pyc
+.pytest_cache/
 uploads/
 outputs/
 previews/
 .DS_Store
 .env
+.cursor/
+tests/
