@@ -614,9 +614,47 @@ select.form-select:focus{
 
 @media (max-width: 768px) {
     .main-content { padding: 1.5rem; }
-    .logo-text h1 { font-size: 1.5rem; }
-    .upload-area { padding: 3rem 1rem; }
+    .logo-text h1 { font-size: 1.2rem; }
+    .upload-area {  padding: 2rem 1rem;}
+    .navbar-toggler{border: 0 !important;}
+    .header-content{flex-direction: column; align-items: flex-start; gap: 1rem;}
+    .logo-icon{flex-shrink: 0;}
+    .logo-section{align-items: start;}
+    .upload-container{padding: .5rem;}
+    .section-header h2 , .preview-header h3 {font-size: 1rem; margin: 0;}
+    .upload-icon {font-size: 2.2rem;}
+    .info-tab{min-width: max-content;}
+    .info-tabs{overflow-x: scroll;}
+    ::-webkit-scrollbar {display: none;}
+    .tab-content-info {padding: 2rem 1rem;}
+    .info-list li {font-size: 0.9rem;}
+    .disclaimer-box > p {font-size: 0.8rem;}
+    .banks-container { gap: 1rem; padding: 1rem; flex-wrap: wrap; justify-content: center;}
+    .bank-card {
+        background: var(--lighter-blue);
+        border: 1px solid var(--border-blue);
+        border-radius: 12px;
+        padding: 1rem;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 0.8rem;
+        /* min-width: 220px; */
+        flex: 1;
 }
+.faq-item p { font-size: .9rem;}
+.bank-card > i {font-size: 1.4rem; margin-bottom: 0 !important; flex-shrink: 0; }
+.bank-name {font-size: 1rem; margin-bottom: 0 !important; flex-shrink: 0; }
+.faq-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+.footer-content{justify-content: center;}
+.upload-subtext {font-size: .8rem;}
+.upload-text {
+    font-size: 1.2rem;
+}
+.navbar-toggler:focus{box-shadow: none !important;}
 
 /* Full-screen loader: upload + slow /preview fetch */
 .global-loader {
@@ -647,4 +685,5 @@ select.form-select:focus{
 .upload-area.is-busy {
     pointer-events: none;
     opacity: 0.65;
+}
 }
