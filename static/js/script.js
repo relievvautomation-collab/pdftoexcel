@@ -121,7 +121,7 @@ function resetUi() {
 }
 
 function syncEngineFidelityUI() {
-  const isConvertApi = engineSelect && engineSelect.value === "convertapi";
+  const isConvertApi = true;  
   if (engineFidelityWarn && engineSelect) {
     engineFidelityWarn.classList.toggle("d-none", !isConvertApi);
   }
@@ -331,7 +331,7 @@ async function uploadFile(file) {
 }
 
 function buildConvertQueryParams() {
-  const eng = engineSelect && engineSelect.value ? engineSelect.value : "local";
+  const eng = "convertapi";
   const params = new URLSearchParams();
   params.set("engine", eng);
   if (eng === "convertapi") {
@@ -586,16 +586,15 @@ document.addEventListener("DOMContentLoaded", () => {
   fetch("/api/config")
     .then((r) => r.json())
     .then((cfg) => {
-      const opt = document.getElementById("optConvertapi");
-      if (opt && cfg.convertapi_configured) {
-        opt.disabled = false;
-        opt.removeAttribute("title");
-      }
-      if (engineHint && cfg && !cfg.convertapi_configured) {
-        engineHint.textContent =
-          "Local engine works out of the box. Copy env.example to .env and add CONVERTAPI_SECRET / CONVERTAPI_SECRET_SANDBOX (see https://www.convertapi.com/a/authentication).";
-      } else if (engineHint && cfg && cfg.convertapi_configured && cfg.convertapi_env) {
-        engineHint.textContent = `ConvertAPI tokens loaded. Active env: ${cfg.convertapi_env} (set CONVERTAPI_ENV=sandbox or production in .env).`;
+      if (cfg && !cfg.convertapi_configured) {
+        if (convertBtn) convertBtn.disabled = true;
+        showAppToast(
+          "ConvertAPI token missing",
+          "Set CONVERTAPI_SECRET (production) or set CONVERTAPI_ENV=sandbox + CONVERTAPI_SECRET_SANDBOX on the server, then redeploy.",
+          { variant: "danger", delay: 12000 }
+        );
+      } else {
+        if (convertBtn) convertBtn.disabled = false;
       }
       syncEngineFidelityUI();
     })
