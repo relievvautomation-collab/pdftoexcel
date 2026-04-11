@@ -47,7 +47,12 @@ let currentPdfFile = null;
 let pageCount = 0;
 let currentPage = 1;
 let previewPageUrls = [];
-let pollTimer = null;
+/** Timeout id for chained convert polls (not setInterval) */
+let convertPollTimer = null;
+/** When true, pollConvertOnce may schedule another request after the current one finishes */
+let convertPollingActive = false;
+/** Prevents overlapping /convert_wait requests */
+let convertPollInFlight = false;
 let convertStartTime = 0;
 let lastOcrNoticeFileId = null;
 /** Same-tick duplicate "change" guard (some browsers fire twice) */
@@ -88,10 +93,7 @@ function resetUi() {
   currentPage = 1;
   previewPageUrls = [];
   lastOcrNoticeFileId = null;
-  if (pollTimer) {
-    clearInterval(pollTimer);
-    pollTimer = null;
-  }
+  stopConvertPolling();
   fileCountEl.textContent = "0";
   summaryFileCount.textContent = "0";
   summaryPageCount.textContent = "0";
@@ -344,34 +346,59 @@ function buildConvertQueryParams() {
   return params.toString();
 }
 
-function pollConvert() {
-  if (!currentFileId) return;
+function stopConvertPolling() {
+  convertPollingActive = false;
+  if (convertPollTimer !== null) {
+    clearTimeout(convertPollTimer);
+    convertPollTimer = null;
+  }
+}
+
+/** Delay before the next poll when still in progress (ConvertAPI stays at ~20% most of the time). */
+function nextConvertPollDelayMs(data) {
+  if (!data) return 2800;
+  if (data.status === "done" || data.status === "error") return 0;
+  const p = data.progress ?? 0;
+  if (data.status === "converting" && p < 75) return 2800;
+  return 1600;
+}
+
+function scheduleNextConvertPoll(data) {
+  if (!convertPollingActive) return;
+  const delay = nextConvertPollDelayMs(data);
+  if (delay <= 0) return;
+  convertPollTimer = setTimeout(() => {
+    convertPollTimer = null;
+    pollConvertOnce();
+  }, delay);
+}
+
+function pollConvertOnce() {
+  if (!convertPollingActive || !currentFileId) return;
+  if (convertPollInFlight) return;
+  convertPollInFlight = true;
   const q = buildConvertQueryParams();
-  fetch(`/convert/${currentFileId}?${q}`)
+  const url = `/convert_wait/${currentFileId}?${q}&wait_ms=25000`;
+  fetch(url)
     .then((r) => {
       if (r.status === 404) {
-        if (pollTimer) {
-          clearInterval(pollTimer);
-          pollTimer = null;
-        }
+        stopConvertPolling();
         convertBtn.disabled = false;
         showNotification(
           "Session not found — re-upload the PDF. If this persists, the server must run Gunicorn with a single worker (see README).",
           "error"
         );
-        return Promise.reject(new Error("convert_404"));
+        return null;
       }
       return r.json();
     })
     .then((data) => {
-      if (!data) return;
+      if (data == null) return;
       const p = data.progress ?? 0;
-      const stepLabel =
-        data.message || `Working… ${Math.round(p)}%`;
+      const stepLabel = data.message || `Working… ${Math.round(p)}%`;
       setProgress(p, stepLabel);
       if (data.status === "done") {
-        clearInterval(pollTimer);
-        pollTimer = null;
+        stopConvertPolling();
         convertBtn.disabled = false;
         downloadBtn.disabled = false;
         setProgress(100, "Complete");
@@ -407,14 +434,27 @@ function pollConvert() {
           })
           .catch(() => {})
           .finally(() => setGlobalLoader(false));
-      } else if (data.status === "error") {
-        clearInterval(pollTimer);
-        pollTimer = null;
+        return;
+      }
+      if (data.status === "error") {
+        stopConvertPolling();
         convertBtn.disabled = false;
         showNotification(data.message || "Conversion failed", "error");
+        return;
+      }
+      scheduleNextConvertPoll(data);
+    })
+    .catch(() => {
+      if (convertPollingActive && currentFileId) {
+        convertPollTimer = setTimeout(() => {
+          convertPollTimer = null;
+          pollConvertOnce();
+        }, 3500);
       }
     })
-    .catch(() => {});
+    .finally(() => {
+      convertPollInFlight = false;
+    });
 }
 
 browseButton.addEventListener("click", (e) => {
@@ -503,9 +543,9 @@ convertBtn.addEventListener("click", () => {
   convertBtn.disabled = true;
   convertStartTime = Date.now();
   setProgress(5, "Starting conversion…");
-  if (pollTimer) clearInterval(pollTimer);
-  pollTimer = setInterval(pollConvert, 700);
-  pollConvert();
+  stopConvertPolling();
+  convertPollingActive = true;
+  pollConvertOnce();
 });
 
 resetBtn.addEventListener("click", () => {
