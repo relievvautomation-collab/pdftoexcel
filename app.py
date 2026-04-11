@@ -16,6 +16,7 @@ except ImportError:
 import hashlib
 import os
 import threading
+import time
 import uuid
 from typing import Any, Dict, Optional
 
@@ -63,6 +64,43 @@ def _parse_bool_arg(val: Optional[str]) -> bool:
     if val is None:
         return False
     return str(val).strip().lower() in ("1", "true", "yes", "on")
+
+
+def _parse_engine_and_convertapi_options() -> tuple[str, Dict[str, Any]]:
+    engine = (request.args.get("engine") or "local").strip().lower()
+    if engine not in ("local", "convertapi"):
+        engine = "local"
+    convertapi_options: Dict[str, Any] = {}
+    if engine == "convertapi":
+        convertapi_options = {
+            "single_sheet": _parse_bool_arg(request.args.get("single_sheet")),
+            "include_formatting": _parse_bool_arg(request.args.get("include_formatting")),
+        }
+    return engine, convertapi_options
+
+
+def _try_start_conversion_job(
+    file_id: str, engine: str, convertapi_options: Dict[str, Any]
+) -> None:
+    start_thread = False
+    with _jobs_lock:
+        j = _jobs.get(file_id)
+        if j and j.get("status") == "uploaded" and not j.get("converting"):
+            _jobs[file_id]["converting"] = True
+            _jobs[file_id]["status"] = "converting"
+            _jobs[file_id]["engine"] = engine
+            if engine == "convertapi":
+                _jobs[file_id]["convertapi_options"] = convertapi_options
+            else:
+                _jobs[file_id].pop("convertapi_options", None)
+            start_thread = True
+    if start_thread:
+        if engine == "convertapi":
+            threading.Thread(
+                target=_run_convertapi_conversion, args=(file_id,), daemon=True
+            ).start()
+        else:
+            threading.Thread(target=_run_conversion, args=(file_id,), daemon=True).start()
 
 
 def _render_pdf_previews(pdf_path: Path, fid: str) -> int:
@@ -319,72 +357,99 @@ def upload():
     )
 
 
-@app.route("/convert/<file_id>", methods=["GET"])
-def convert(file_id: str):
-    engine = (request.args.get("engine") or "local").strip().lower()
-    if engine not in ("local", "convertapi"):
-        engine = "local"
-
+def _convert_response_json(file_id: str) -> tuple[Dict[str, Any], int]:
+    """Snapshot of job for /convert and /convert_wait (200 unless unknown)."""
     with _jobs_lock:
         job = _jobs.get(file_id)
     if not job:
-        return jsonify({"error": "Unknown file_id"}), 404
+        return {"error": "Unknown file_id"}, 404
 
     if job.get("status") == "done":
-        return jsonify(
+        return (
             {
                 "file_id": file_id,
                 "progress": 100,
                 "status": "done",
                 "message": job.get("message"),
                 "excel_meta": job.get("excel_meta"),
-            }
+            },
+            200,
         )
 
     if job.get("status") == "error":
-        return jsonify(
+        return (
             {
                 "file_id": file_id,
                 "progress": 0,
                 "status": "error",
                 "message": job.get("error") or job.get("message"),
-            }
+            },
+            200,
         )
 
-    convertapi_options: Dict[str, Any] = {}
-    if engine == "convertapi":
-        convertapi_options = {
-            "single_sheet": _parse_bool_arg(request.args.get("single_sheet")),
-            "include_formatting": _parse_bool_arg(request.args.get("include_formatting")),
-        }
-
-    start_thread = False
-    with _jobs_lock:
-        j = _jobs.get(file_id)
-        if j and j.get("status") == "uploaded" and not j.get("converting"):
-            _jobs[file_id]["converting"] = True
-            _jobs[file_id]["status"] = "converting"
-            _jobs[file_id]["engine"] = engine
-            if engine == "convertapi":
-                _jobs[file_id]["convertapi_options"] = convertapi_options
-            else:
-                _jobs[file_id].pop("convertapi_options", None)
-            start_thread = True
-    if start_thread:
-        if engine == "convertapi":
-            threading.Thread(target=_run_convertapi_conversion, args=(file_id,), daemon=True).start()
-        else:
-            threading.Thread(target=_run_conversion, args=(file_id,), daemon=True).start()
-
     j = _job_get(file_id)
-    return jsonify(
+    return (
         {
             "file_id": file_id,
             "progress": j.get("progress", 0),
             "status": j.get("status", "converting"),
             "message": j.get("message", ""),
-        }
+        },
+        200,
     )
+
+
+@app.route("/convert/<file_id>", methods=["GET"])
+def convert(file_id: str):
+    engine, convertapi_options = _parse_engine_and_convertapi_options()
+    with _jobs_lock:
+        job = _jobs.get(file_id)
+    if not job:
+        return jsonify({"error": "Unknown file_id"}), 404
+    _try_start_conversion_job(file_id, engine, convertapi_options)
+    body, code = _convert_response_json(file_id)
+    return jsonify(body), code
+
+
+@app.route("/convert_wait/<file_id>", methods=["GET"])
+def convert_wait(file_id: str):
+    """
+    Hold the request until the job finishes, errors, or wait_ms elapses (default 25s).
+    Reduces client polling round-trips; keep wait_ms below reverse-proxy timeouts (~100s).
+    """
+    engine, convertapi_options = _parse_engine_and_convertapi_options()
+
+    with _jobs_lock:
+        job = _jobs.get(file_id)
+    if not job:
+        return jsonify({"error": "Unknown file_id"}), 404
+
+    if job.get("status") in ("done", "error"):
+        body, code = _convert_response_json(file_id)
+        return jsonify(body), code
+
+    _try_start_conversion_job(file_id, engine, convertapi_options)
+
+    try:
+        wait_ms = int(request.args.get("wait_ms", "25000"))
+    except (TypeError, ValueError):
+        wait_ms = 25000
+    wait_ms = max(1000, min(wait_ms, 25000))
+
+    deadline = time.monotonic() + wait_ms / 1000.0
+    while time.monotonic() < deadline:
+        j = _job_get(file_id)
+        st = j.get("status")
+        if st == "done":
+            body, code = _convert_response_json(file_id)
+            return jsonify(body), code
+        if st == "error":
+            body, code = _convert_response_json(file_id)
+            return jsonify(body), code
+        time.sleep(0.25)
+
+    body, code = _convert_response_json(file_id)
+    return jsonify(body), code
 
 
 @app.route("/download/<file_id>", methods=["GET"])
