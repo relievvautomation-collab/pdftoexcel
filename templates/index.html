@@ -54,7 +54,7 @@
                     </div>
                     <div class="logo-text">
                         <h1>PDF to Excel Converter</h1>
-                        <p class="mb-0">Layout-aware conversion — text, fonts, colors, images, tables &amp; borders</p>
+                         <p class="mb-0">Convert PDF tables into clean, structured, and editable Excel files in seconds.</p>
                     </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 1.5rem;">
@@ -216,7 +216,7 @@
                 </div>
             </section>
 
-            <section class="info-panel">
+  <section class="info-panel">
                 <div class="info-tabs">
                     <button type="button" class="info-tab active" data-tab="features">Key Features</button>
                     <button type="button" class="info-tab" data-tab="safety">Data Safety</button>
@@ -225,38 +225,60 @@
                 <div class="tab-content-info">
                     <div class="tab-pane-info active" id="features-tab">
                         <ul class="info-list ps-0">
-                            <li>PyMuPDF extraction for text positions, fonts, colors, and embedded images</li>
-                            <li>Camelot / lattice-stream table detection when vector lines are present</li>
-                            <li>OpenPyXL output with fills, fonts, borders, merges, and column sizing</li>
-                            <li>Optional OCR (pytesseract) for scanned pages when no text is found</li>
-                            <li>Optional <strong>ConvertAPI</strong> (cloud) for raw table extraction — not a visual clone of the PDF; use <strong>Local</strong> for TRACES-style layout and colors</li>
-                            <li>Multi-page PDFs with per-page sections in the workbook</li>
+                            <li>Convert PDF tables into clean, editable Excel sheets within seconds.</li>
+                            <li>Automatically detects rows, columns, headers, and multi-page tables.</li>
+                            <li>Supports bank statements, invoices, GST reports, purchase registers, sales reports, and similar documents.
+                            </li>
+                            <li>Maintains original table structure as closely as possible for easier review.
+                            </li>
+                            <li>Extracts data from multiple pages into a single organised Excel file.</li>
+                            <li>Handles both simple and complex table formats with better accuracy.
+                            </li>
+                            <li>No manual copy-paste required – save hours of repetitive work.</li>
+                            <li>Works directly in your browser without installing any software.
+                            </li>
+                            <li>Preview your extracted data before downloading the final Excel file.
+                            </li>
+                            <li>Designed for accountants, finance teams, auditors, tax professionals, and business users.
+                            </li>
                         </ul>
                     </div>
                     <div class="tab-pane-info" id="safety-tab">
                         <ul class="info-list ps-0">
-                            <li>Processing on your Python backend — files stored under uploads/ and outputs/</li>
-                            <li>Review outputs before sharing; verify financial or legal documents manually</li>
-                            <li>Local engine: no external API. <strong>ConvertAPI</strong> engine uploads the PDF to ConvertAPI and returns their XLSX — use only if you accept their terms and pricing.</li>
+                            <li>Your uploaded files are processed through a secure environment.</li>
+                            <li>Files and generated outputs are not shared with any third party.
+                            </li>
+                            <li>All uploaded documents remain private and accessible only during processing.</li>
+                            <li>We do not permanently store your PDF files or extracted Excel data.</li>
+                            <li>Sensitive financial information remains protected throughout the process.</li>
+                            <li>Secure transfer protocols are used while uploading and downloading files.</li>
+                            <li>The tool is built keeping confidentiality and business data security in mind.</li>
+                            <li>Only the required file data is processed to generate the Excel output.</li>
                         </ul>
-                        <div class="disclaimer-box">
+                        <!-- <div class="disclaimer-box">
                             <h4><i class="fas fa-shield-alt"></i> Disclaimer</h4>
                             <p class="mb-0">Pixel-perfect PDF fidelity in Excel is not always possible; results depend on the PDF. Always verify the spreadsheet against the source PDF.</p>
-                        </div>
+                        </div> -->
                     </div>
                     <div class="tab-pane-info" id="notes-tab">
                         <ul class="info-list ps-0">
-                            <li><strong>ConvertAPI</strong> turns PDF tables into spreadsheet cells; it does <strong>not</strong> reproduce the PDF’s full look (logos, fonts, colors, exact layout). For outputs styled closer to the source (e.g. TRACES 26AS), use the <strong>Local</strong> engine.</li>
-                            <li><strong>ConvertAPI layout options:</strong> <em>Multiple sheets</em> vs <em>One sheet</em> and optional <em>Include formatting</em> map to ConvertAPI’s parameters. They adjust worksheets and extra content, not full PDF-style appearance.</li>
-                            <li>Vector/text PDFs give the best layout match; heavy scans rely on OCR quality</li>
-                            <li>Camelot may require Ghostscript for some files — see camelot docs</li>
-                            <li>Very large PDFs may take longer; progress is shown during conversion</li>
+                            <li>This tool currently works only with digitally generated PDFs.</li>
+                            <li>Scanned PDFs, photos, handwritten documents, and image-based files are not supported yet.</li>
+                            <li>OCR support is currently not available. We are working to add OCR in new update.</li>
+                            <li>For best results, use PDFs that contain clear and selectable text.</li>
+                            <li>Complex layouts, merged cells, or highly formatted reports may require minor manual adjustments after conversion.</li>
+                            <li>Password-protected or encrypted PDF files must be unlocked before upload.</li>
+                            <li>Very large PDF files may take slightly longer to process.</li>
+                            <li>The final Excel file should always be reviewed before using it for accounting, tax, or reporting purposes.</li>
+                            <li>Tables with unclear formatting or broken alignment may not convert perfectly.</li>
+                            <li>We are continuously improving the tool to support more document formats and layouts.
+                            </li>
                         </ul>
                     </div>
                 </div>
             </section>
 
-            <section class="supported-banks">
+            <section class="supported-banks d-none">
                 <div class="section-header">
                     <h2><i class="fas fa-layer-group"></i> Typical Use Cases</h2>
                 </div>
@@ -282,16 +304,41 @@
                 </div>
                 <div class="faq-container">
                     <div class="faq-item">
-                        <h3>Will the Excel file look exactly like the PDF?</h3>
-                        <p>We map coordinates, styles, images, and detected tables as closely as Excel allows. Complex PDF graphics may require manual touch-up.</p>
+                        <h3>What type of PDF files are supported?
+                        </h3>
+                       <p>The tool supports digitally generated PDF files with selectable text. Examples include bank statements, invoices, GST reports, ledger reports, and other business documents.</p>
                     </div>
                     <div class="faq-item">
-                        <h3>Do you support scanned PDFs?</h3>
-                        <p>If no text is detected, the backend attempts OCR when <code>pytesseract</code> and Tesseract are installed on the server.</p>
+                        <h3>Does this tool support scanned PDFs or images?</h3>
+                        <p>No. Currently, scanned PDFs, image-based documents, screenshots, and handwritten files are not supported because OCR functionality is not available yet.</p>
                     </div>
                     <div class="faq-item">
-                        <h3>What do I download?</h3>
-                        <p>A single <strong>.xlsx</strong> file built with OpenPyXL from the extracted structure.</p>
+                        <h3>Will my table formatting remain the same in Excel?</h3>
+                        <p>The tool tries to preserve the original table structure, including rows, columns, and headers. However, some complex layouts may need small manual corrections.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h3>Is my uploaded data safe?</h3>
+                       <p>Yes. Your files are processed securely, are not shared with anyone, and are automatically removed after processing.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h3>What should I do if the converted Excel file is not accurate?</h3>
+                        <p>Try uploading a cleaner PDF with properly aligned tables and selectable text. If the PDF contains complex formatting, you may need to make small edits in Excel.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h3> Can I upload multiple-page PDFs?</h3>
+                       <p>Yes. The tool supports PDFs with multiple pages and combines extracted data into one Excel file wherever possible.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h3> Does the tool support password-protected PDFs?</h3>
+                   <p>No. Password-protected or encrypted PDF files must be unlocked before uploading.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h3>Who can use this tool?</h3>
+                        <p>This tool is useful for accountants, finance teams, CA firms, auditors, tax consultants, business owners, and anyone who regularly works with PDF reports.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h3> Is there any file size limit?</h3>
+                        <p>Large files may take more time to process. For better speed and accuracy, it is recommended to upload smaller or properly structured PDF files whenever possible.</p>
                     </div>
                 </div>
             </section>
