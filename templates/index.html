@@ -3,7 +3,214 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF to Excel Converter — Relievv</title>
+<!-- Primary Meta -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDF to Excel</title>
+<meta name="description" content="Convert PDF to Excel online free. Extract tables from bank statements, invoices, GST reports into clean XLSX files in seconds. No installation needed. Secure & fast PDF to Excel conversion by Relievv.">
+<meta name="keywords" content="PDF to Excel converter, PDF to XLSX, convert PDF to Excel online free, extract tables from PDF, bank statement to Excel, invoice PDF to Excel, GST report converter, PDF table extractor, Relievv tools">
+<meta name="author" content="Relievv Automation">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://pdftoexcel.relievv.in/">
+ 
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pdftoexcel.relievv.in/">
+<meta property="og:title" content="PDF to Excel Converter Free Online – Relievv">
+<meta property="og:description" content="Convert PDF tables to clean, editable Excel files in seconds. Supports bank statements, invoices, GST reports. Free, secure, no installation required."> 
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:site_name" content="Relievv">
+<meta property="og:locale" content="en_IN">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:url" content="https://pdftoexcel.relievv.in/">
+<meta name="twitter:title" content="PDF to Excel Converter Free Online – Relievv">
+<meta name="twitter:description" content="Convert PDF tables to clean, editable Excel files in seconds. Supports bank statements, invoices, GST reports."> 
+
+<!-- JSON-LD Structured Data (Google Rich Results) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "PDF to Excel Converter",
+  "url": "https://pdftoexcel.relievv.in/",
+  "description": "Convert PDF tables into clean, editable Excel (XLSX) files. Supports bank statements, invoices, GST reports, purchase registers, and more.",
+  "applicationCategory": "UtilityApplication",
+  "operatingSystem": "Any",
+  "browserRequirements": "Requires JavaScript",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "INR"
+  },
+  "creator": {
+    "@type": "Organization",
+    "name": "Relievv Automation",
+    "url": "https://relievv.in"
+  },
+  "featureList": [
+    "Convert PDF tables to Excel",
+    "Multi-page PDF support",
+    "Bank statement to Excel",
+    "Invoice PDF to XLSX",
+    "GST report extraction",
+    "No installation required",
+    "Secure processing"
+  ]
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What type of PDF files are supported?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The tool supports digitally generated PDF files with selectable text including bank statements, invoices, GST reports, and other business documents."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is the PDF to Excel converter free?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, the Relievv PDF to Excel converter is completely free to use online without any installation."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is my uploaded data safe?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Your files are processed securely, are not shared with anyone, and are automatically removed after processing."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does this tool support scanned PDFs?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Currently scanned PDFs, image-based documents, screenshots, and handwritten files are not supported. OCR support is coming soon."
+      }
+    }
+  ]
+}
+</script>
+
+ 
+
+<!-- GA4 Base Tag -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CRQXYD2K82"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  // Enhanced GA4 config — captures session, scroll depth, engagement
+  gtag('config', 'G-CRQXYD2K82', {
+    send_page_view: true,
+    page_title: 'PDF to Excel Converter',
+    page_location: window.location.href,
+    // Custom dimensions for per-user analytics
+    custom_map: {
+      dimension1: 'user_session_id',
+      dimension2: 'conversion_count',
+      dimension3: 'total_pages_converted',
+      dimension4: 'file_size_category'
+    }
+  });
+
+ 
+  (function() {
+    try {
+      let sid = localStorage.getItem('rv_session_id');
+      if (!sid) {
+        sid = 'rv_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('rv_session_id', sid);
+      }
+      // Track visit count per user
+      let visits = parseInt(localStorage.getItem('rv_visit_count') || '0') + 1;
+      localStorage.setItem('rv_visit_count', visits);
+      localStorage.setItem('rv_last_visit', new Date().toISOString());
+
+      // Push to GA4 as user properties
+      gtag('set', 'user_properties', {
+        user_session_id: sid,
+        visit_count: visits,
+        returning_user: visits > 1 ? 'yes' : 'no'
+      });
+
+      // Track page visit event with full context
+      gtag('event', 'page_visit', {
+        event_category: 'engagement',
+        session_id: sid,
+        visit_number: visits,
+        referrer: document.referrer || 'direct',
+        entry_time: new Date().toISOString(),
+        returning_user: visits > 1
+      });
+
+    } catch(e) { console.warn('Analytics session error:', e); }
+  })();
+
+  // ─── TIME ON PAGE TRACKER ───────────────────────────────────
+  (function() {
+    const pageStart = Date.now();
+    const milestones = [30, 60, 120, 300]; // seconds
+    const fired = {};
+
+    function checkMilestones() {
+      const elapsed = Math.floor((Date.now() - pageStart) / 1000);
+      milestones.forEach(function(s) {
+        if (elapsed >= s && !fired[s]) {
+          fired[s] = true;
+          gtag('event', 'time_on_page', {
+            event_category: 'engagement',
+            seconds: s,
+            label: s + 's milestone'
+          });
+        }
+      });
+    }
+    setInterval(checkMilestones, 10000);
+
+    // Fire total time on page exit
+    window.addEventListener('beforeunload', function() {
+      const total = Math.floor((Date.now() - pageStart) / 1000);
+      gtag('event', 'page_exit', {
+        event_category: 'engagement',
+        time_spent_seconds: total,
+        label: 'exit after ' + total + 's'
+      });
+    });
+  })();
+
+  // ─── SCROLL DEPTH TRACKER ──────────────────────────────────
+  (function() {
+    const depths = [25, 50, 75, 90, 100];
+    const firedDepths = {};
+    window.addEventListener('scroll', function() {
+      const scrolled = Math.round(
+        (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100
+      );
+      depths.forEach(function(d) {
+        if (scrolled >= d && !firedDepths[d]) {
+          firedDepths[d] = true;
+          gtag('event', 'scroll_depth', {
+            event_category: 'engagement',
+            depth_percent: d,
+            label: d + '% scrolled'
+          });
+        }
+      });
+    }, { passive: true });
+  })();
+</script>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon/favicon-96x96.png') }}" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon/favicon.svg') }}" />
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" />
@@ -15,18 +222,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .container{max-width: 1500px;}
-        .nav-link{font-weight: 500;}  
+        .nav-link{font-weight: 500;}
+         
        </style>
 </head>
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-CRQXYD2K82"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
 
-  gtag('config', 'G-CRQXYD2K82');
-</script>
 <body>
     <div class="app-container">
       <div class="container">
@@ -452,6 +652,6 @@
     </div>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
     <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
-
+   <script src="{{ url_for('static', filename='js/analytic-tracker.js') }}"></script>
 </body>
 </html>
